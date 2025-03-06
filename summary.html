@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Meal Planner - Summary</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      max-width: 1000px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .dish-title {
+      font-weight: bold;
+      background-color: #dcdcdc;
+    }
+    .ingredients-header td {
+      background-color: #f7f7f7;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dish Summary</h1>
+  <table id="summary-table">
+    <!-- Table will be built dynamically -->
+  </table>
+  
+  <script>
+    // Load the unified mealData from localStorage.
+    let mealData = JSON.parse(localStorage.getItem('mealData')) || [];
+    
+    // Build summaryData: key = dishName, value = { ingredientName: totalAmount, ... }
+    let summaryData = {};
+    mealData.forEach(dish => {
+      let dishName = dish.dishName.trim();
+      if (!summaryData[dishName]) {
+        summaryData[dishName] = {};
+      }
+      dish.ingredients.forEach(ing => {
+        let ingName = ing.name.trim();
+        let amount = parseFloat(ing.amount) || 0;
+        if (ingName) {
+          summaryData[dishName][ingName] = (summaryData[dishName][ingName] || 0) + amount;
+        }
+      });
+    });
+    
+    // Render the summary table.
+    let summaryTable = document.getElementById('summary-table');
+    
+    // Iterate over each dish in summaryData.
+    Object.entries(summaryData).forEach(([dishName, ingMap]) => {
+      // Get the ingredient names and sort them alphabetically.
+      let ingNames = Object.keys(ingMap).sort();
+      // You can remove the slice if you want to display all ingredients.
+      let ingTop = ingNames; // or ingNames.slice(0, 10);
+      
+      // Create the dish title row.
+      let titleRow = summaryTable.insertRow();
+      titleRow.classList.add('dish-title');
+      let titleCell = titleRow.insertCell();
+      titleCell.colSpan = ingTop.length + 1; // 1 for the label cell plus one cell per ingredient
+      titleCell.textContent = dishName;
+      
+      // Create the header row showing the real ingredient names.
+      let headerRow = summaryTable.insertRow();
+      headerRow.classList.add('ingredients-header');
+      let headerLabelCell = headerRow.insertCell();
+      headerLabelCell.textContent = 'Ingredients';
+      ingTop.forEach(ingName => {
+        let cell = headerRow.insertCell();
+        cell.textContent = ingName;
+      });
+      
+      // Create the weight row with the corresponding amounts.
+      let weightRow = summaryTable.insertRow();
+      let weightLabelCell = weightRow.insertCell();
+      weightLabelCell.textContent = 'Weight (g)';
+      ingTop.forEach(ingName => {
+        let cell = weightRow.insertCell();
+        cell.textContent = ingMap[ingName].toFixed(2);
+      });
+    });
+  </script>
+</body>
+</html>

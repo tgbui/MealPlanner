@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Meal Planner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      max-width: 900px;
+    }
+    h1, h2 {
+      margin-bottom: 10px;
+    }
+    .form-row {
+      margin-bottom: 10px;
+    }
+    .form-row label {
+      width: 120px;
+      display: inline-block;
+    }
+    .form-row input,
+    .form-row select {
+      width: 200px;
+      margin-right: 20px;
+    }
+    .ingredient-group {
+      margin-left: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Meal Planner</h1>
+  <!-- Entry Form -->
+  <div id="form-area">
+    <!-- Day Selection -->
+    <div class="form-row">
+      <label for="day">Day:</label>
+      <select id="day">
+        <option value="">Select a day</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+        <option value="Saturday">Saturday</option>
+        <option value="Sunday">Sunday</option>
+      </select>
+    </div>
+    <!-- Dish Name -->
+    <div class="form-row">
+      <label for="dish-name">Dish Name:</label>
+      <input type="text" id="dish-name" placeholder="e.g., Chicken Soup">
+    </div>
+    <!-- Up to 10 Ingredient Fields -->
+    <div id="ingredients-area">
+      <!-- Ingredient 1 -->
+      <div class="form-row ingredient-group">
+        <label>Ingredient 1:</label>
+        <input type="text" id="ing-name-1" placeholder="e.g., Chicken">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-1" placeholder="e.g., 200">
+      </div>
+      <!-- Ingredient 2 -->
+      <div class="form-row ingredient-group">
+        <label>Ingredient 2:</label>
+        <input type="text" id="ing-name-2" placeholder="e.g., Onion">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-2" placeholder="e.g., 50">
+      </div>
+      <!-- Ingredients 3 to 10 -->
+      <div class="form-row ingredient-group">
+        <label>Ingredient 3:</label>
+        <input type="text" id="ing-name-3">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-3">
+      </div>
+      <div class="form-row ingredient-group">
+        <label>Ingredient 4:</label>
+        <input type="text" id="ing-name-4">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-4">
+      </div>
+      <div class="form-row ingredient-group">
+        <label>Ingredient 5:</label>
+        <input type="text" id="ing-name-5">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-5">
+      </div>
+      <div class="form-row ingredient-group">
+        <label>Ingredient 6:</label>
+        <input type="text" id="ing-name-6">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-6">
+      </div>
+      <div class="form-row ingredient-group">
+        <label>Ingredient 7:</label>
+        <input type="text" id="ing-name-7">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-7">
+      </div>
+      <div class="form-row ingredient-group">
+        <label>Ingredient 8:</label>
+        <input type="text" id="ing-name-8">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-8">
+      </div>
+      <div class="form-row ingredient-group">
+        <label>Ingredient 9:</label>
+        <input type="text" id="ing-name-9">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-9">
+      </div>
+      <div class="form-row ingredient-group">
+        <label>Ingredient 10:</label>
+        <input type="text" id="ing-name-10">
+        <label>Amount (g):</label>
+        <input type="number" id="ing-amount-10">
+      </div>
+    </div>
+    <button onclick="addDish()">Add Dish</button>
+    <button onclick="saveData()">Save All Data</button>
+    <button onclick="clearData()">Clear All Data</button>
+  </div>
+
+  <h2>Meal Planner Summary</h2>
+  <!-- Big Table -->
+  <table id="meal-table">
+    <thead>
+      <tr>
+        <th>Day</th>
+        <th>Dish Name</th>
+        <th>Ingredient</th>
+        <th>Amount (g)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows will be added dynamically -->
+    </tbody>
+  </table>
+
+  <script>
+    // Global array to store dish objects.
+    // Each object: { day: string, dishName: string, ingredients: [ { name, amount } ] }
+    let mealData = [];
+
+    // On page load, load any saved data from localStorage.
+    window.onload = function() {
+      const savedData = localStorage.getItem('mealData');
+      if (savedData) {
+        mealData = JSON.parse(savedData);
+        renderTable();
+      }
+    };
+
+    // Add a dish based on form inputs.
+    function addDish() {
+      const daySelect = document.getElementById('day');
+      const dishInput = document.getElementById('dish-name');
+      const day = daySelect.value;
+      const dishName = dishInput.value.trim();
+
+      if (!day) {
+        alert("Please select a day.");
+        return;
+      }
+      if (!dishName) {
+        alert("Please enter a dish name.");
+        return;
+      }
+
+      let ingredients = [];
+      // Loop through 10 possible ingredient pairs.
+      for (let i = 1; i <= 10; i++) {
+        const ingName = document.getElementById('ing-name-' + i).value.trim();
+        const ingAmount = document.getElementById('ing-amount-' + i).value.trim();
+        if (ingName && ingAmount) {
+          ingredients.push({ name: ingName, amount: parseFloat(ingAmount) });
+        }
+      }
+      if (ingredients.length === 0) {
+        alert("Please enter at least one ingredient.");
+        return;
+      }
+
+      // Create the dish object and add to the global array.
+      const dishObj = { day: day, dishName: dishName, ingredients: ingredients };
+      mealData.push(dishObj);
+
+      // Clear form inputs.
+      daySelect.value = "";
+      dishInput.value = "";
+      for (let i = 1; i <= 10; i++) {
+        document.getElementById('ing-name-' + i).value = "";
+        document.getElementById('ing-amount-' + i).value = "";
+      }
+
+      renderTable();
+    }
+
+    // For sorting days in order.
+    const dayOrder = {
+      "Monday": 1,
+      "Tuesday": 2,
+      "Wednesday": 3,
+      "Thursday": 4,
+      "Friday": 5,
+      "Saturday": 6,
+      "Sunday": 7
+    };
+
+    // Render the global mealData array into the table.
+    function renderTable() {
+      const tbody = document.querySelector('#meal-table tbody');
+      tbody.innerHTML = "";
+      
+      // Sort the mealData array by day order.
+      mealData.sort((a, b) => (dayOrder[a.day] || 0) - (dayOrder[b.day] || 0));
+      
+      // Loop through each dish object.
+      mealData.forEach(dish => {
+        const { day, dishName, ingredients } = dish;
+        // For dishes with multiple ingredients, create one row per ingredient.
+        ingredients.forEach((ing, index) => {
+          const row = document.createElement('tr');
+          if (index === 0) {
+            // For the first ingredient, add Day and Dish cells with rowspan.
+            const dayCell = document.createElement('td');
+            dayCell.textContent = day;
+            dayCell.rowSpan = ingredients.length;
+            row.appendChild(dayCell);
+
+            const dishCell = document.createElement('td');
+            dishCell.textContent = dishName;
+            dishCell.rowSpan = ingredients.length;
+            row.appendChild(dishCell);
+          }
+          // Ingredient cell.
+          const ingCell = document.createElement('td');
+          ingCell.textContent = ing.name;
+          row.appendChild(ingCell);
+          // Amount cell.
+          const amountCell = document.createElement('td');
+          amountCell.textContent = ing.amount;
+          row.appendChild(amountCell);
+          
+          tbody.appendChild(row);
+        });
+      });
+    }
+
+    // Save the current mealData to localStorage.
+    function saveData() {
+      localStorage.setItem('mealData', JSON.stringify(mealData));
+      alert("Data saved!");
+    }
+
+    // Clear the data and update the table.
+    function clearData() {
+      if (confirm("Are you sure you want to clear all data?")) {
+        mealData = [];
+        localStorage.removeItem('mealData');
+        renderTable();
+      }
+    }
+  </script>
+</body>
+</html>

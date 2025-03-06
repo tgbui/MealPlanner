@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Meal Planner - Shopping List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      max-width: 600px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .bought {
+      text-decoration: line-through;
+      color: #888;
+    }
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Shopping List</h1>
+  <table id="shopping-table">
+    <thead>
+      <tr>
+        <th>Ingredient</th>
+        <th>Amount (g)</th>
+        <th>Bought</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows will be added dynamically -->
+    </tbody>
+  </table>
+
+  <script>
+    // Load the unified mealData from localStorage.
+    let mealData = JSON.parse(localStorage.getItem('mealData')) || [];
+
+    // Aggregate all ingredients across dishes.
+    let ingredientTotals = {};
+    mealData.forEach(dish => {
+      dish.ingredients.forEach(ing => {
+        let ingName = ing.name.trim();
+        let amount = parseFloat(ing.amount) || 0;
+        if (ingName) {
+          ingredientTotals[ingName] = (ingredientTotals[ingName] || 0) + amount;
+        }
+      });
+    });
+
+    // Load saved "bought" states from localStorage (if any).
+    let boughtStates = JSON.parse(localStorage.getItem('shoppingBought')) || {};
+
+    // Render the shopping list table.
+    let tbody = document.querySelector('#shopping-table tbody');
+    Object.entries(ingredientTotals)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .forEach(([ingredient, total]) => {
+        let row = document.createElement('tr');
+        if (boughtStates[ingredient]) {
+          row.classList.add('bought');
+        }
+
+        // Ingredient cell.
+        let ingCell = document.createElement('td');
+        ingCell.textContent = ingredient;
+        row.appendChild(ingCell);
+
+        // Amount cell.
+        let amountCell = document.createElement('td');
+        amountCell.textContent = total.toFixed(2);
+        row.appendChild(amountCell);
+
+        // Checkbox cell.
+        let boughtCell = document.createElement('td');
+        let checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = boughtStates[ingredient] || false;
+        checkbox.addEventListener('change', () => {
+          boughtStates[ingredient] = checkbox.checked;
+          if (checkbox.checked) {
+            row.classList.add('bought');
+          } else {
+            row.classList.remove('bought');
+          }
+          // Save the updated states back to localStorage.
+          localStorage.setItem('shoppingBought', JSON.stringify(boughtStates));
+        });
+        boughtCell.appendChild(checkbox);
+        row.appendChild(boughtCell);
+
+        tbody.appendChild(row);
+      });
+  </script>
+</body>
+</html>
